@@ -1,20 +1,210 @@
-﻿// Lab3_OOP.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+﻿#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
+#include <cstring>
+#include <Windows.h>
+
+using namespace std;
+
+class CharSet
+{
+public:
+	char* str;
+	int strLength;
+
+	CharSet()
+	{
+		str = new char[1];
+		strLength = 0;
+	}
+
+	CharSet(const CharSet& charset)
+	{
+		SetString(charset.str);
+	}
+
+	CharSet(const char* str)
+	{
+		SetString(str);
+	}
+	~CharSet()
+	{
+		delete[] str;
+	}
+
+	void SetString(const char* str)
+	{
+		strLength = strlen(str);
+		this->str = new char[strLength + 1];
+		strcpy(this->str, str);
+	}
+
+	char* GetString()
+	{
+		return str;
+	}
+
+	void Print()
+	{
+		cout << str << endl;
+	}
+
+	bool IsEqualTo(const char* strToCompare)
+	{
+		return strcmp(str, strToCompare);
+	}
+
+	bool IsGreaterThan(const char* strToCompare)
+	{
+		return strLength > strlen(strToCompare);
+	}
+
+	friend ostream& operator << (ostream& output, const CharSet& charset)
+	{
+		output << charset.str;
+		return output;
+	}
+
+	friend istream& operator >> (istream& input, const CharSet& charset)
+	{
+		input >> charset.str;
+		return input;
+	}
+
+	bool operator <= (CharSet charset)
+	{
+		const char* ukr_alphabet = "абвгґдеєжзиіїйклмнопрстуфхцшщьюяАБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦШЩЬЮЯ";
+		int alphabet_size = 65;
+
+		char* str1 = str;
+		char* str2 = charset.str;
+
+		while (*str1 != '\0' || *str2 != '\0')
+		{
+			if (*str1 == *str2)
+			{
+				str1++;
+				str2++;
+				continue;
+			}
+
+			int i, j;
+			for (i = 0; i < alphabet_size; i++)
+			{
+				if (*str1 == ukr_alphabet[i])
+					break;
+			}
+			for (j = 0; j < alphabet_size; j++)
+			{
+				if (*str2 == ukr_alphabet[j])
+					break;
+			}
+
+			if (i >= j)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	void operator - (char ch)
+	{
+		char* result = str;
+		char* sentence = str;
+
+		while (*sentence != '\0')
+		{
+			if (*sentence == ch)
+			{
+				sentence++;
+				continue;
+			}
+
+			*result++ = *sentence++;
+		}
+
+		*result = '\0';
+	}
+};
+
+void Sort(CharSet charSets[], int count);
+void PrintAll(CharSet charSets[], int count);
+void RemoveCharFromCharSets(CharSet charSets[], int count, char ch);
+bool IsInAlphabeticalOrder(CharSet charSets[], int count);
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+	CharSet charSets[] =
+	{
+		CharSet("Яюєї"),
+		CharSet("Аббвгд"),
+		CharSet("Іб"),
+		CharSet("Іа"),
+		CharSet("Абвгд")
+	};
+
+	int arrsize = sizeof(charSets) / sizeof(CharSet);
+
+	PrintAll(charSets, arrsize);
+	Sort(charSets, arrsize);
+	puts("");
+	PrintAll(charSets, arrsize);
+
+	RemoveCharFromCharSets(charSets, arrsize, 'І');
+	puts("");
+	PrintAll(charSets, arrsize);
+
+	if (IsInAlphabeticalOrder(charSets, arrsize))
+		cout << "Рядки залишились впорядкованими" << endl;
+	else
+		cout << "Рядки більше не впорядковані" << endl;
+
+	system("pause");
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+void Sort(CharSet arr[], int count)
+{
+	CharSet temp;
+	for (int i = 0; i < count; i++)
+	{
+		for (int j = i + 1; j < count; j++)
+		{
+			if (arr[i] <= arr[j])
+			{
+				temp.SetString(arr[i].str);
+				arr[i].SetString(arr[j].str);
+				arr[j].SetString(temp.str);
+			}
+		}
+	}
+}
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+void PrintAll(CharSet charSets[], int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		cout << charSets[i] << endl;
+	}
+}
+
+void RemoveCharFromCharSets(CharSet charSets[], int count, char ch)
+{
+	for (int i = 0; i < count; i++)
+	{
+		charSets[i] - ch;
+	}
+}
+
+bool IsInAlphabeticalOrder(CharSet charSets[], int count)
+{
+	bool flag = true;
+	for (int i = 0; i < count - 1; i++)
+	{
+		if (charSets[i] <= charSets[i + 1])
+			flag = false;
+	}
+	return flag;
+}
